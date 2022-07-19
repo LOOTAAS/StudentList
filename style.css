@@ -1,0 +1,289 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+}
+
+
+body {
+  background-color: #a9a9a9;
+}
+
+li {
+  list-style-type: none;
+}
+
+
+.containder {
+  height: 95vh;
+  margin: 20px auto;
+  padding: 20px;
+  /* max-width: 1174px; */
+  display: flex;
+  flex-direction: column;
+  /* background-color: #e2ebec; */
+  /* border: 1px solid rgba(0, 0, 0, 0.415);
+  border-radius: 15px; */
+}
+
+.input-group {
+  margin: 0 auto;
+  margin-bottom: 30px;
+  padding: 30px 0;
+  display: flex;
+  /* justify-content: space-around; */
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.415);
+}
+
+.box-full-name {
+  margin-left: 24px;
+  margin-right: 239px;
+  display: flex;
+  flex-direction: column;
+}
+
+.box-other-input {
+  margin-right: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.box-input {
+  position: relative;
+}
+
+.box-input:not(:last-child) {
+  margin-bottom: 12px;
+}
+
+.input-value {
+  padding: 10px 20px;
+  width: 214px;
+  height: 47px;
+  border-radius: 10px;
+  border: 1px solid black;
+  outline: none;
+  transition: outline .3s ease-in-out;
+  font-size: 20px;
+}
+
+
+.input-value:focus {
+  outline: 2px solid gray;
+  transition: outline .2s ease-in-out;
+}
+
+.red {
+  border: 1px solid red;
+  outline: none;
+  outline: none;
+  transition: outline .2s ease-in-out;
+}
+
+.red:focus {
+  outline: 1.5px solid red;
+  transition: outline .2s ease-in-out;
+}
+
+.green {
+  border: 1px solid green;
+  outline: none;
+  outline: none;
+  transition: outline .2s ease-in-out;
+}
+
+.green:focus {
+  outline: 1.5px solid green;
+  transition: outline .2s ease-in-out;
+}
+
+
+/* вывод ошибки */
+.alert {
+  width: 126px;
+  position: absolute;
+  display: inline-block;
+  right: -144px;
+  top: 1px;
+  color: red;
+  padding: 5px;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 10px;
+  font-size: 14px;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-name: bounce-2;
+  animation-timing-function: ease;
+}
+
+
+@keyframes bounce-2 {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* button add new item ______ */
+.btn {
+  padding: 15px 28px;
+  border-radius: 10px;
+}
+
+.btn:disabled {
+  cursor: no-drop;
+  background-color: -internal-light-dark(rgba(239, 239, 239, 0.3), rgba(19, 1, 1, 0.3));
+  color: -internal-light-dark(rgba(16, 16, 16, 0.3), rgba(255, 255, 255, 0.3));
+  border-color: -internal-light-dark(rgba(118, 118, 118, 0.3), rgba(195, 195, 195, 0.3));
+  border: none;
+  box-shadow: -2px -2px 2px 0px rgba(19, 1, 1, 0.3) inset;
+  transition: background-color, .3s ease-in-out, box-shadow .3s ease-in-out;
+  pointer-events: none;
+}
+
+.btn {
+  box-shadow: -2px -2px 2px 0px black inset;
+  border: none;
+  background-color: aliceblue;
+  transition: background-color, .3s ease-in-out, box-shadow .3s ease-in-out;
+  /* outline: 2px solid rgb(50, 48, 48); */
+}
+
+.btn:focus {
+  background-color: #434ed1;
+  box-shadow: -1px -1px 2px 0px black inset;
+}
+
+.btn:active {
+  box-shadow: 1px 1px 2px 1px black inset;
+}
+
+/* __________________________ */
+
+.input-filter {
+  height: 40px;
+  width: 220px;
+  padding: 10px 20px;
+  border-radius: 10px;
+}
+
+.input-filter:not(:last-child) {
+  margin-right: 44px;
+}
+
+.header {
+  padding: 18px 18px;
+  background-color: white;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 600;
+  outline: none;
+  transition: outline .2s ease;
+}
+
+
+.sort-accepted {
+  outline: 4px solid #767676;
+  outline-offset: -5px;
+  font-weight: 800;
+  transition: outline .2s ease;
+}
+
+
+.list-group {
+  /* width: 100%; */
+  margin: 0 auto;
+  padding: 2% 6% 3% 6%;
+  background-color: #2d3034;
+  border-radius: 10px;
+}
+
+.item {
+  height: 60px;
+  align-items: center;
+  border-radius: 10px;
+}
+
+.item:nth-child(2n+1) {
+  background-color: rgb(116 116 112 / 58%);
+}
+
+.item, .first-item {
+  /* margin-bottom: 15px; */
+  padding: 10px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.first-item {
+
+  padding: 30px;
+}
+
+.element {
+  width: 250px;
+  color: white;
+}
+
+.element:not(:last-child) {
+  margin-right: 60px;
+}
+
+.element:nth-child(2) {
+  width: 120px;
+}
+
+.header {
+  color: black;
+}
+
+
+/* button delete ___________ */
+
+.button-delete {
+  position: relative;
+  width: 30px;
+  height: 25px;
+  border-radius: 10px;
+  border: 1px solid rgba(123, 123, 123, 0.641);
+  background-color: rgba(254, 35, 35, 0.79);
+  cursor: pointer;
+}
+
+.icon-close {
+  position: absolute;
+  left: 0;
+  right: 20px;
+  top: 10px;
+  bottom: 0;
+}
+
+.icon-close:before, .icon-close:after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 2px;
+  background: gray;
+}
+
+.icon-close:before {
+  transform: rotate(45deg);
+}
+
+.icon-close:after {
+  transform: rotate(-45deg);
+}
+
+/* __________________________ */
