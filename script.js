@@ -57,9 +57,10 @@
     // inputDOB.required = true
     // inputStartDate.required = true
 
-    inputDOB.type = 'text';
-    inputDOB.setAttribute('onfocus', `(this.type='date')`);
-    inputDOB.setAttribute('onblur', `(this.type='text')`);
+    inputDOB.type = 'date';
+    // Для крастоы, теряем фокус, превращается в тип текст
+    // inputDOB.setAttribute('onfocus', `(this.type='date')`);
+    // inputDOB.setAttribute('onblur', `(this.type='text')`);
     inputDOB.setAttribute('min', '1900-01-01')
 
     // inputStartDate.type = 'number'
@@ -237,6 +238,8 @@
         }
         localStorage.setItem(title, JSON.stringify(filterArrows))
         item.remove();
+        storage = filterArrows
+        items = filterArrows
       }
     }
 
@@ -273,7 +276,7 @@
       },
       faculty: handbookForm.inputFaculty.value,
       DOB: reverseDOBOutput + '\n' + '(' + outputsDOBvalue + '\n' + 'лет' + ')',
-      startDate: handbookForm.inputStartDate.value + '\n' + outputDate,
+      startDate: handbookForm.inputStartDate.value + '\n' + outputDate.outputStartDate,
       timeStamp: Date.now(),
     }
     // добавляю студента
@@ -283,6 +286,7 @@
     handbookList.append(handbookItemAdd.item)
     items.push(formValue)
 
+    storage = items
     localStorage.setItem(title, JSON.stringify(items))
 
   }
@@ -342,43 +346,46 @@
   // Если все верно, включаю кнопку
   function parseEmployeesData(valdate, handbookForm) {
 
-    if (valdate !== document.querySelector('#DOB') && valdate !== document.querySelector('#start-date')) {
+    return debounce(function () {
 
-      if (valdate.value != []) {
+      if (valdate !== document.querySelector('#DOB') && valdate !== document.querySelector('#start-date')) {
 
-        // Берем 1 букву, делаем заглавной, соединяем начальное значение без первой буквы
-        let result = valdate.value.charAt(0).toUpperCase() + valdate.value.slice(1);
-        valdate.value = result.replace(/[^a-zа-яё]/gi, '');
-        if (valdate.value.length < 3 && valdate.value !== "" || valdate.value.length > 15) {
-          valdate.classList.remove('green')
-          valdate.classList.add('red')
-          valdate.classList.add('red-name-and-facult')
+        if (valdate.value != []) {
 
+          // Берем 1 букву, делаем заглавной, соединяем начальное значение без первой буквы
+          let result = valdate.value.charAt(0).toUpperCase() + valdate.value.slice(1);
+          valdate.value = result.replace(/[^a-zа-яё]/gi, '');
+          if (valdate.value.length < 3 && valdate.value !== "" || valdate.value.length > 15) {
+            valdate.classList.remove('green')
+            valdate.classList.add('red')
+            valdate.classList.add('red-name-and-facult')
+
+          } else {
+            // console.log(valdate, 'valdate yes')
+            valdate.classList.add('green')
+            valdate.classList.remove('red')
+          }
         } else {
-          // console.log(valdate, 'valdate yes')
-          valdate.classList.add('green')
-          valdate.classList.remove('red')
+          console.log('есть пустое поле')
         }
       } else {
-        console.log('есть пустое поле')
+        return
       }
-    } else {
-      return
-    }
+    }, 10)
   }
 
   //Валидация года обучения ___________________
   function calculateStartDate(valdate, outputsDOBvalue) {
     let outputStartDate;
+    let valueForAlert
     if (valdate == document.querySelector('#start-date')) {
       // debugger
 
-      let valueForalert
       let yearStudent = Number(outputsDOBvalue.years + 18);
 
-      console.log(yearStudent, 'yearStudent')
+      // console.log(yearStudent, 'yearStudent')
       let nowDate = new Date().getFullYear();
-      console.log(nowDate, 'nowDate')
+      // console.log(nowDate, 'nowDate')
 
       let valueStartDate = document.querySelector('#start-date').value;
       valdate.value = valueStartDate.replace(/[^\d-]/gi, '')
@@ -390,77 +397,97 @@
 
 
       let valueStartDateNumber = Number(valueStartDate)
+      secondDateAll = valueStartDate.slice(5)
 
       switch (true) {
+        case (secondDateAll.length > 4):
+          valdate.classList.remove('green')
+          valdate.classList.add('red')
+          valueForAlert = 'Вторая дата невалидна'
+          break
         case (yearStudent > firstDate):
           valdate.classList.remove('green')
           valdate.classList.add('red')
-          console.log('значения меньше 18-летия');
-          // поправить для выода Ошибки
-          // valueForalert = 'значения меньше 18-летия'
+          valueForAlert = 'Первое число меньше 18-летия'
           break
         case (firstDate + 4 !== secondDate):
           valdate.classList.remove('green')
           valdate.classList.add('red')
-          console.log('диапазон меньше или больше 4 лет диапазон')
-          break
-        case (secondDate >= nowDate):
-          valdate.classList.add('green')
-          valdate.classList.remove('red')
-          outputStartDate = nowDate - firstDate + '\n' + 'курс'
-          if (outputStartDate.slice(0, 1) >= 0) {
-            outputStartDate = 1 + '\n' + 'курс'
-          }
-          else {
-            valdate.classList.remove('green')
-            valdate.classList.add('red')
-
-          }
-          console.log(outputStartDate, 'курс')
+          valueForAlert = 'диапазон меньше или больше 4 лет'
           break
         case (secondDate <= nowDate):
           valdate.classList.add('green')
           valdate.classList.remove('red')
           outputStartDate = '\n' + 'закончил'
           break
+        case (firstDate > nowDate):
+          valdate.classList.remove('green')
+          valdate.classList.add('red')
+          valueForAlert = 'первая дата больше нынешнего года'
+          break
+        case (secondDate >= nowDate):
+          valdate.classList.add('green')
+          valdate.classList.remove('red')
+          outputStartDate = nowDate - firstDate + '\n' + 'курс'
+          if (outputStartDate.slice(0, 1) >= 0 && outputStartDate.slice(0, 1) <= 1) {
+            console.log(outputStartDate, outputStartDate.slice(0, 1), 'посмотрим')
+            outputStartDate = 1 + '\n' + 'курс'
+          }
+          else {
+            console.log('не прошло')
+            // valdate.classList.remove('green')
+            // valdate.classList.add('red')
+            valdate.classList.add('green')
+            valdate.classList.remove('red')
+          }
+          console.log(outputStartDate, 'курс')
+          break
         default:
-          console.log('невалидная форма')
+          valueForAlert = 'невалидная дата'
           valdate.classList.add('green')
           valdate.classList.remove('red')
           break;
       }
     }
-    return outputStartDate
+    return {
+      outputStartDate,
+      valueForAlert
+    }
   }
 
   // вывод alert
 
-  function checkInputAlert(valdate) {
-    let alert = document.createElement('p')
-    alert.classList.add('alert')
-    document.querySelectorAll('.alert').forEach(function (alert) {
-      alert.remove()
-    })
+  function checkInputAlert(valdate, outputDate) {
 
-    switch (true) {
-      case (valdate.classList.contains('green')):
+    (debounce(() => {
+      let alert = document.createElement('p')
+      alert.classList.add('alert')
+      document.querySelectorAll('.alert').forEach(function (alert) {
         alert.remove()
-        break
-      case (valdate.classList.contains('lenght-value')):
-        alert.textContent = 'Не меньше 3-х и не больше 10 символов'
-        valdate.after(alert)
-        break
-      case (valdate.classList.contains('DOB')):
-        alert.textContent = 'Дата не может быть меньше 1900 и не больше нынешней'
-        valdate.after(alert)
-        break
-      case (valdate.classList.contains('start-date')):
-        alert.textContent = 'Формат даты: 2000-2004'
-        alert.style.width = '100px'
-        alert.style.right = '-130px'
-        valdate.after(alert)
-        break
-    }
+      })
+
+
+      switch (true) {
+        case (valdate.classList.contains('green')):
+          alert.remove()
+          break
+        case (valdate.classList.contains('lenght-value')):
+          alert.textContent = 'Не меньше 3-х и не больше 10 символов'
+          valdate.after(alert)
+          break
+        case (valdate.classList.contains('DOB')):
+          alert.textContent = 'Дата не может быть меньше 1900 и не больше нынешней'
+          valdate.after(alert)
+          break
+        case (valdate.classList.contains('start-date')):
+          // alert.textContent = 'Формат даты: 2000-2004'
+          alert.textContent = outputDate.valueForAlert
+          alert.style.width = '100px'
+          alert.style.right = '-130px'
+          valdate.after(alert)
+          break
+      }
+    }, 800))()
 
   }
 
@@ -483,299 +510,186 @@
 
   // Сортировка - Определяет какую вид сортировки нужен
 
-  function sortSwitch(itemsForSort, storage, resultOutput, title) {
-    const items = JSON.parse(localStorage.getItem(title));
-    itemsForSort.addEventListener('click', function () {
-      let itemHeader1 = document.getElementById('header1')
-      let itemHeader2 = document.getElementById('header2')
-      let itemHeader3 = document.getElementById('header3')
-      let itemHeader4 = document.getElementById('header4')
-      switch (true) {
-        case (itemHeader1 == itemsForSort):
-          sortStudentData(storage, resultOutput, itemHeader1, items)
-          break
-        case (itemHeader2 == itemsForSort):
-          sortFaculty(storage, resultOutput, itemHeader2, items)
-          break
-        case (itemHeader3 == itemsForSort):
-          sortDOB(storage, resultOutput, itemHeader3, items)
-          break
-        case (itemHeader4 == itemsForSort):
-          sortStartDateLeftPart(storage, resultOutput, itemHeader4, items)
-          break
+  function sortSwitch(itemsForSortArray) {
+    // debugger
+    // const items = JSON.parse
+    let itemHeader1 = document.getElementById('header1')
+    let itemHeader2 = document.getElementById('header2')
+    let itemHeader3 = document.getElementById('header3')
+    let itemHeader4 = document.getElementById('header4')
+
+
+    console.log(itemsForSortArray, 'itemsForSortArray')
+
+    let itemsDuble = [...storage]
+
+    console.log(itemsDuble, 'itemsDuble')
+    itemsForSortArray.forEach(function (itemsForSort) {
+      // debugger
+      if (itemHeader1 == itemsForSort && itemsForSort.classList.contains('sort-accepted')) {
+        itemsDuble = sortStudentData(itemsDuble)
+      }
+      if (itemHeader2 == itemsForSort && itemsForSort.classList.contains('sort-accepted')) {
+        itemsDuble = sortFaculty(itemsDuble)
+      }
+      if (itemHeader3 == itemsForSort && itemsForSort.classList.contains('sort-accepted')) {
+        itemsDuble = sortDOB(itemsDuble)
+      }
+      if (itemHeader4 == itemsForSort && itemsForSort.classList.contains('sort-accepted')) {
+        itemsDuble = sortStartDateLeftPart(itemsDuble)
       }
     })
-
+    return itemsDuble
   }
 
   // Сортировка ФИО
-  function sortStudentData(storage, resultOutput, itemHeader1, items) {
+  function sortStudentData(itemsDuble) {
 
-    if (!itemHeader1.classList.contains('sort-accepted')) {
-      storage.sort((a, b) => {
-        let a_fullName = `${a.fullName.surname} ${a.fullName.name} ${a.fullName.middleName}`.toLowerCase()
-        let b_fullName = `${b.fullName.surname} ${b.fullName.name} ${b.fullName.middleName}`.toLowerCase()
+    return itemsDuble.sort((a, b) => {
+      let a_fullName = `${a.fullName.surname} ${a.fullName.name} ${a.fullName.middleName}`.toLowerCase()
+      let b_fullName = `${b.fullName.surname} ${b.fullName.name} ${b.fullName.middleName}`.toLowerCase()
 
-        if (a_fullName < b_fullName)
-          return -1
-        if (a_fullName > b_fullName)
-          return 1
+      if (a_fullName < b_fullName)
+        return -1
+      if (a_fullName > b_fullName)
+        return 1
 
-        return 0
-      })
-      // console.log(storage, "сортировыка?")
-      document.querySelectorAll('.item').forEach(function (delite) {
-        delite.remove()
-      })
-
-      resultOutput(storage)
-
-      document.querySelectorAll('.header').forEach(function (del) {
-        if (del != itemHeader1) {
-          del.classList.remove('sort-accepted')
-        }
-      })
-      itemHeader1.classList.add('sort-accepted')
-
-    } else {
-
-      document.querySelectorAll('.item').forEach(function (delite) {
-        delite.remove()
-      })
-      resultOutput(items)
-      itemHeader1.classList.remove('sort-accepted')
-
-    }
+      return 0
+    })
   }
 
   // Сортировка факультета
-  function sortFaculty(storage, resultOutput, itemHeader2, items) {
+  function sortFaculty(itemsDuble) {
 
-    if (!itemHeader2.classList.contains('sort-accepted')) {
-      storage.sort((a, b) => {
-        let a_faculty = a.faculty.toLowerCase()
-        let b_faculty = b.faculty.toLowerCase()
 
-        if (a_faculty < b_faculty)
-          return -1
-        if (a_faculty > b_faculty)
-          return 1
+    return itemsDuble.sort((a, b) => {
+      let a_faculty = a.faculty.toLowerCase()
+      let b_faculty = b.faculty.toLowerCase()
 
-        return 0
-      })
-      console.log(storage, "сортировыка?22")
-      document.querySelectorAll('.item').forEach(function (delite) {
-        delite.remove()
-      })
+      if (a_faculty < b_faculty)
+        return -1
+      if (a_faculty > b_faculty)
+        return 1
 
-      resultOutput(storage)
-
-      document.querySelectorAll('.header').forEach(function (del) {
-        if (del != itemHeader2) {
-          del.classList.remove('sort-accepted')
-        }
-      })
-
-      itemHeader2.classList.add('sort-accepted')
-    } else {
-
-      document.querySelectorAll('.item').forEach(function (delite) {
-        delite.remove()
-      })
-      resultOutput(items)
-      itemHeader2.classList.remove('sort-accepted')
-
-    }
+      return 0
+    })
   }
 
+  // Сортировка даты рождения
+  function sortDOB(itemsDuble) {
 
-  function sortDOB(storage, resultOutput, itemHeader3, items) {
-
-
-    if (!itemHeader3.classList.contains('sort-accepted')) {
-      storage.sort(function (a, b) {
-        let dateA = new Date(a.DOB), dateB = new Date(b.DOB)
-        return dateA - dateB //сортировка по возрастающей дате
-
-
-      })
-
-      document.querySelectorAll('.item').forEach(function (delite) {
-        delite.remove()
-      })
-      resultOutput(storage)
-
-      document.querySelectorAll('.header').forEach(function (del) {
-        if (del != itemHeader3) {
-          del.classList.remove('sort-accepted')
-        }
-      })
-
-      itemHeader3.classList.add('sort-accepted')
-    } else {
-
-      document.querySelectorAll('.item').forEach(function (delite) {
-        delite.remove()
-      })
-      resultOutput(items)
-      document.querySelectorAll('.header').forEach(function (del) {
-        if (del != itemHeader3) {
-          del.classList.remove('sort-accepted')
-        }
-      })
-      itemHeader3.classList.remove('sort-accepted')
-    }
+    return itemsDuble.sort(function (a, b) {
+      let dateA = new Date(a.DOB), dateB = new Date(b.DOB)
+      return dateB - dateA //сортировка по возрастающей дате
+    })
   }
   // сортировка по дате поступления по начальной дате, а при втором клике по второй
-  function sortStartDateLeftPart(storage, resultOutput, itemHeader4, items) {
+  function sortStartDateLeftPart(itemsDuble) {
 
-    switch (true) {
-      case (itemHeader4.classList.contains('sort-accepted-start-date-two-part')):
-
-        document.querySelectorAll('.item').forEach(function (delite) {
-          delite.remove()
-        })
-        resultOutput(items)
-
-        document.querySelectorAll('.header').forEach(function (del) {
-          if (del != itemHeader4) {
-            del.classList.remove('sort-accepted')
-          }
-        })
-        itemHeader4.classList.remove('sort-accepted')
-        itemHeader4.classList.remove('sort-accepted-start-date-two-part')
-        break
-      case (!itemHeader4.classList.contains('sort-accepted')):
-
-        storage.sort((a, b) => {
-          // console.log(a.startDate.slice(5, 9))
-          return a.startDate.slice(0, 4) - b.startDate.slice(0, 4)
-        })
-        document.querySelectorAll('.item').forEach(function (delite) {
-          delite.remove()
-        })
-        resultOutput(storage)
-        document.querySelectorAll('.header').forEach(function (del) {
-          if (del != itemHeader4) {
-            del.classList.remove('sort-accepted')
-          }
-        })
-
-        itemHeader4.classList.add('sort-accepted')
-
-        break
-      case (itemHeader4.classList.contains('sort-accepted')):
-
-        storage.sort((a, b) => {
-          console.log('2')
-          return b.startDate.slice(5, 9) - a.startDate.slice(5, 9)
-        })
-        document.querySelectorAll('.item').forEach(function (delite) {
-          delite.remove()
-        })
-        resultOutput(storage)
-
-        itemHeader4.classList.add('sort-accepted-start-date-two-part')
-        break
-    }
+    return itemsDuble.sort((a, b) => {
+      // console.log(a.startDate.slice(5, 9))
+      return a.startDate.slice(0, 4) - b.startDate.slice(0, 4)
+    })
   }
 
 
   // Фильтр через инпут
-  function filterSwitch(inputsSearch, storage, resultOutput) {
-
+  function filterSwitch(inputSearchArray) {
     let itemFilter1 = document.getElementById('filter-1')
     let itemFilter2 = document.getElementById('filter-2')
     let itemFilter3 = document.getElementById('filter-3')
     let itemFilter4 = document.getElementById('filter-4')
-    switch (true) {
-      case (itemFilter1 == inputsSearch):
-        filterStudentData(inputsSearch, storage, resultOutput)
-        break
-      case (itemFilter2 == inputsSearch):
-        filterFaculty(inputsSearch, storage, resultOutput)
-        break
-      case (itemFilter3 == inputsSearch):
-        filterDOB(inputsSearch, storage, resultOutput)
-        break
-      case (itemFilter4 == inputsSearch):
-        filterStartDate(inputsSearch, storage, resultOutput)
-        break
-    }
+
+    let storageDubleForFilter = [...storage];
+
+    // debugger
+    inputSearchArray.forEach(function (inputsSearch) {
+
+      if (itemFilter1 == inputsSearch && inputsSearch.classList.contains('filter-accept')) {
+        storageDubleForFilter = filterStudentData(inputsSearch, storageDubleForFilter)
+      }
+      if (itemFilter2 == inputsSearch && inputsSearch.classList.contains('filter-accept')) {
+        storageDubleForFilter = filterFaculty(inputsSearch, storageDubleForFilter)
+      }
+      if (itemFilter3 == inputsSearch && inputsSearch.classList.contains('filter-accept')) {
+        storageDubleForFilter = filterDOB(inputsSearch, storageDubleForFilter)
+      }
+      if (itemFilter4 == inputsSearch && inputsSearch.classList.contains('filter-accept')) {
+        storageDubleForFilter = filterStartDate(inputsSearch, storageDubleForFilter)
+      }
+    })
+
+
+
+    return storageDubleForFilter
   }
 
 
   // фильтр ФИО
-  function filterStudentData(inputsSearch, storage, resultOutput) {
-    console.log(storage)
+  function filterStudentData(inputsSearch, storageDubleForFilter) {
+    console.log(storageDubleForFilter)
 
-    const filterStudentDataItem = storage.filter(function (item) {
+    return storageDubleForFilter.filter(function (item) {
       let studentData = `${item.fullName.surname} ${item.fullName.name} ${item.fullName.middleName}`.toLowerCase()
       return studentData.includes(inputsSearch.value)
     })
-    document.querySelectorAll('.item').forEach(function (delite) {
-      delite.remove()
-    })
-    resultOutput(filterStudentDataItem)
   }
 
   // фильтр Факультета
-  function filterFaculty(inputsSearch, storage, resultOutput) {
-    console.log(storage)
+  function filterFaculty(inputsSearch, storageDubleForFilter) {
+    console.log(storageDubleForFilter)
 
-    const filterStudentDataItem = storage.filter(function (item) {
+    return storageDubleForFilter.filter(function (item) {
       let studentData = item.faculty.toLowerCase()
       return studentData.includes(inputsSearch.value)
     })
-    document.querySelectorAll('.item').forEach(function (delite) {
-      delite.remove()
-    })
-    resultOutput(filterStudentDataItem)
   }
   // фильтр DOB
 
-  function filterDOB(inputsSearch, storage, resultOutput) {
-    console.log(storage)
+  function filterDOB(inputsSearch, storageDubleForFilter) {
+    console.log(storageDubleForFilter)
 
-    const filterStudentDataItem = storage.filter(function (item) {
+    return storageDubleForFilter.filter(function (item) {
       let studentData = item.DOB
       return studentData.includes(inputsSearch.value)
     })
-    document.querySelectorAll('.item').forEach(function (delite) {
-      delite.remove()
-    })
-    resultOutput(filterStudentDataItem)
   }
   // фильтр StartDate
 
-  function filterStartDate(inputsSearch, storage, resultOutput) {
-    console.log(storage)
+  function filterStartDate(inputsSearch, storageDubleForFilter) {
+    console.log(storageDubleForFilter)
 
-    const filterStudentDataItem = storage.filter(function (item) {
+    return storageDubleForFilter.filter(function (item) {
       let studentData = item.startDate
       return studentData.includes(inputsSearch.value)
     })
-    document.querySelectorAll('.item').forEach(function (delite) {
-      delite.remove()
-    })
-    resultOutput(filterStudentDataItem)
+  }
+
+  // таймер для вывода обработки инпутов (ошибки, валидация)
+  const debounce = (fn, ms) => {
+    let timeout;
+    return function () {
+      const fnCall = () => { fn.apply(this, arguments) }
+      clearTimeout(timeout);
+      timeout = setTimeout(fnCall, ms)
+    }
   }
 
 
   // инициализирую само преложение
 
+  const title = "Студенты"
+  var items = JSON.parse(localStorage.getItem(title)) || defaultArrow;
+  // Дублирую инфу из localStorage
+  var storage = items;
 
   function createHandbookApp(container) {
     // для вывода года
     let outputDate
 
-    const title = "Студенты"
 
     const defaultArrow = [];
 
-    const items = JSON.parse(localStorage.getItem(title)) || defaultArrow;
-    // Дублирую инфу из localStorage
-    const storage = items;
 
     let HandbookFilterInputs = createHandbookFilterInputs()
 
@@ -800,8 +714,8 @@
           middleName: "Витальевич",
         },
         faculty: "Машиностроение",
-        DOB: '09.01.1995',
-        startDate: "2005-2009",
+        DOB: '09.01.1995 (26 лет)',
+        startDate: "2005-2009 (закончил)",
         timeStamp: Date.now()
       }
 
@@ -837,48 +751,73 @@
         clearValue.classList.remove('green')
         handbookForm.button.setAttribute("disabled", "disabled")
       })
+
     })
+
 
     // валидация
     // список реагирует на нажатие клавиши (в данном случае происхлодит валидация)
     document.querySelectorAll('.input-value').forEach(function (valdate) {
 
-      valdate.addEventListener('keyup', function (e) {
+      valdate.addEventListener('keyup', () => {
         // Делаю заглоавной первую букву
-        parseEmployeesData(valdate, handbookForm)
+        parseEmployeesData(valdate, handbookForm)()
         // высчитываю возраст
         outputDOB()
         // валидация Года обучения
         let outputsDOBvalue = outputDOB()
         calculateStartDate(valdate, outputsDOBvalue)
-        checkInputAlert(valdate)
+        // переключататель ошибок
+        outputDate = calculateStartDate(valdate, outputsDOBvalue)
+        // console.log(outputDate, 'outputDate')
+        checkInputAlert(valdate, outputDate)
+        // включение кнопки
         onButton(handbookForm)
 
-        outputDate = calculateStartDate(valdate, outputsDOBvalue)
 
       })
     })
 
 
+
     // Сортировка на кнопки
-    document.querySelectorAll('.header').forEach(function (itemsForSort) {
-      sortSwitch(itemsForSort, storage, resultOutput, title)
+
+
+    document.querySelectorAll('.header').forEach(function (itemsForSort, _i, itemsForSortArray) {
+      itemsForSort.addEventListener('click', function () {
+
+        if (!itemsForSort.classList.contains('sort-accepted')) {
+          itemsForSort.classList.add('sort-accepted')
+
+
+        } else {
+          itemsForSort.classList.remove('sort-accepted')
+
+        }
+        document.querySelectorAll('.item').forEach(function (delite) {
+          delite.remove()
+        })
+        resultOutput(sortSwitch(itemsForSortArray))
+      })
+
+
     })
 
 
     // Сортировка поиска подстроки
     // console.log(document.querySelector('.input-filter'))
-    document.querySelectorAll('.input-filter').forEach(function (inputsSearch) {
+    document.querySelectorAll('.input-filter').forEach(function (inputsSearch, _i, inputSearchArray) {
       inputsSearch.addEventListener('keyup', () => {
-        if (inputsSearch.value.length == 0) {
-          document.querySelectorAll('.item').forEach(function (delite) {
-            delite.remove()
-          })
-          resultOutput(items)
-        } else {
 
-          filterSwitch(inputsSearch, storage, resultOutput)
+        if (inputsSearch.value.length == 0) {
+          inputsSearch.classList.remove('filter-accept')
+        } else {
+          inputsSearch.classList.add('filter-accept')
         }
+        document.querySelectorAll('.item').forEach(function (delite) {
+          delite.remove()
+        })
+        resultOutput(filterSwitch(inputSearchArray))
       })
     })
 
