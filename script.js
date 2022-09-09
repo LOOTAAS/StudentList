@@ -679,6 +679,7 @@
   // инициализирую само преложение
 
   const title = "Студенты"
+  let defaultArrow = []
   var items = JSON.parse(localStorage.getItem(title)) || defaultArrow;
   // Дублирую инфу из localStorage
   var storage = items;
